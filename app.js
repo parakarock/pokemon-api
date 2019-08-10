@@ -27,6 +27,10 @@ let pokemon = [{
 {
     name: 'Eevee',
     type: 'Normal'
+},
+{
+    name: 'Eeveee',
+    type: 'Normall'
 }]
 app.use(express.json())
 app.get('/pokemons', (req, res) => res.send(pokemon))
