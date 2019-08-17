@@ -32,9 +32,21 @@ pokemon.push(generatedNewPokemon('Rattana', 'Normal'))
 pokemon.push(generatedNewPokemon('Eevee', 'Normal'))
 
 app.use(express.json())
+app.get('/', (req, res) => res.send({ message : "Hello world"}))
 app.get('/pokemons', (req, res) => res.send(pokemon))   //Show All
 app.get('/pokemon/:id', (req, res) => {     //Find Pokemon
-    let p = pokemon[req.params.id - 1]
+
+    if(!isSufficientParam(req.params.id)){
+        res.status(400).send({ error: 'Insufficient parameters: id are required parameter' })
+        return
+    }
+
+    let id = req.params.id
+    if(!isPokemonExisted(id)){
+        res.status(400).send({ error: 'The pokemon could not be found' })
+        return
+    }
+    let p = pokemon[id - 1]
     res.send(p)
 })
 app.put('/pokemon/:id', (req, res) => {     //Add type2
@@ -45,16 +57,17 @@ app.put('/pokemon/:id', (req, res) => {     //Add type2
 
     let id = req.params.id
     if(!isPokemonExisted(id)){
-        res.status(400).send({ error: 'Cannot update pokemon is not found' })
+        res.status(400).send({ error: 'The pokemon could not be found' })
         return
     }
+    let p = pokemon[id - 1]
     p.type2 = req.body.type2
     pokemon[req.params.id - 1] = p
-    res.status(201).send(p)
+    res.status(200).send(p)
 })
 app.post('/pokemons', (req, res) => {   //AddPokemon
 
-    if (isSufficientParam(req.body.name) || isSufficientParam(req.body.type)) {
+    if (!isSufficientParam(req.body.name) || !isSufficientParam(req.body.type)) {
         res.status(400).send({ error: 'Insufficient parameters: name and type are required parameter' })
         return
     }
@@ -65,7 +78,7 @@ app.post('/pokemons', (req, res) => {   //AddPokemon
     res.sendStatus(201)
 })
 
-app.delete('/pokemon/:id', (req,res) => {
+app.delete('/pokemon/:id', (req,res) => {   //delete
     if(!isSufficientParam(req.body.type2)){
         res.status(400).send({ error: 'Insufficient parameters: type2 are required parameter' })
         return
@@ -73,7 +86,7 @@ app.delete('/pokemon/:id', (req,res) => {
 
     let id = req.params.id
     if(!isPokemonExisted(id)){
-        res.status(400).send({ error: 'Cannot delete pokemon is not found' })
+        res.status(400).send({ error: 'The pokemon could not be found' })
         return
     }
 
@@ -81,7 +94,6 @@ app.delete('/pokemon/:id', (req,res) => {
     res.sendStatus(204)
 })
 
-app.listen(port, () => console.log(`Pokemon API listening on port ${port}`))
 
 function generatedNewId(num) {
     return num + 1
@@ -98,6 +110,8 @@ function isSufficientParam(v) {
 }
 
 function isPokemonExisted(id){
-    return pokemon[id - 1] !== undefined || pokemon[id - 1] !== null
+    return pokemon[id - 1] !== undefined && pokemon[id - 1] !== null
 
 }
+
+module.exports = app
