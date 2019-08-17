@@ -32,19 +32,19 @@ pokemon.push(generatedNewPokemon('Rattana', 'Normal'))
 pokemon.push(generatedNewPokemon('Eevee', 'Normal'))
 
 app.use(express.json())
-app.get('/pokemons', (req, res) => res.send(pokemon))
-app.get('/pokemon/:id', (req, res) => {
+app.get('/pokemons', (req, res) => res.send(pokemon))   //Show All
+app.get('/pokemon/:id', (req, res) => {     //Find Pokemon
     let p = pokemon[req.params.id - 1]
     res.send(p)
 })
-app.put('/pokemon/:id', (req, res) => {
+app.put('/pokemon/:id', (req, res) => {     //Add type2
     if(!isSufficientParam(req.body.type2)){
         res.status(400).send({ error: 'Insufficient parameters: type2 are required parameter' })
         return
     }
 
-    let p = pokemon[req.params.id - 1]
-    if( p === undefined){
+    let id = req.params.id
+    if(!isPokemonExisted(id)){
         res.status(400).send({ error: 'Cannot update pokemon is not found' })
         return
     }
@@ -52,7 +52,7 @@ app.put('/pokemon/:id', (req, res) => {
     pokemon[req.params.id - 1] = p
     res.status(201).send(p)
 })
-app.post('/pokemons', (req, res) => {
+app.post('/pokemons', (req, res) => {   //AddPokemon
 
     if (isSufficientParam(req.body.name) || isSufficientParam(req.body.type)) {
         res.status(400).send({ error: 'Insufficient parameters: name and type are required parameter' })
@@ -63,6 +63,22 @@ app.post('/pokemons', (req, res) => {
 
 
     res.sendStatus(201)
+})
+
+app.delete('/pokemon/:id', (req,res) => {
+    if(!isSufficientParam(req.body.type2)){
+        res.status(400).send({ error: 'Insufficient parameters: type2 are required parameter' })
+        return
+    }
+
+    let id = req.params.id
+    if(!isPokemonExisted(id)){
+        res.status(400).send({ error: 'Cannot delete pokemon is not found' })
+        return
+    }
+
+    delete pokemon[id-1]
+    res.sendStatus(204)
 })
 
 app.listen(port, () => console.log(`Pokemon API listening on port ${port}`))
@@ -79,4 +95,9 @@ function generatedNewPokemon(name, type) {
 
 function isSufficientParam(v) {
     return v !== undefined || v !== null || v !== ''
+}
+
+function isPokemonExisted(id){
+    return pokemon[id - 1] !== undefined || pokemon[id - 1] !== null
+
 }
